@@ -1,0 +1,359 @@
+package logica;
+import java.time.LocalDate;
+import java.util.ArrayList;
+
+public class Gestion {
+    private ArrayList<Carrera> Carreras;
+    private ArrayList<Alumno> Alumnos;
+
+    public Gestion(){
+        Carreras = new ArrayList<>();
+        Alumnos = new ArrayList<>();
+    }
+
+    public void AgregarCarrera (String nombreCarrera,int tipoPlan, int duracionCarrera){
+        Carrera nuevaCarrera = new Carrera(nombreCarrera);
+
+        // Asignar el plan de estudio adecuado según el tipo proporcionado
+        PlanDeEstudio planDeEstudio;
+        switch (tipoPlan) {
+            case 1:
+                planDeEstudio = new PlanA();
+                break;
+            case 2:
+                planDeEstudio = new PlanB();
+                break;
+            case 3:
+                planDeEstudio = new PlanC();
+                break;
+            case 4:
+                planDeEstudio = new PlanD();
+                break;
+            case 5:
+                planDeEstudio = new PlanE();
+                break;
+            default:
+                // En caso de tipo de plan no reconocido, se puede manejar de alguna manera apropiada
+                // Por ejemplo, lanzar una excepción
+                throw new IllegalArgumentException("Tipo de plan de estudio no válido: " + tipoPlan);
+        }
+
+        nuevaCarrera.setPlanDeEstudio(planDeEstudio);
+        Carreras.add(nuevaCarrera);
+    }
+
+
+    //--------------------------------------------- AGREGAR CARRERAS -----------------------------------------------
+    public void AgregarCarreraAnalista() {
+        // Crear la carrera
+        Carrera carreraAnalista = new Carrera("Analista en Sistemas");
+        carreraAnalista.setMateriaOptativasRequeridas(1);
+        
+        // Crear plan de estudio (usando PlanE como ejemplo)
+        PlanDeEstudio planDeEstudio = new PlanE();
+        
+        // Crear materias del primer año, primer cuatrimestre
+        Materia elementosInformatica = new Materia("IF001", "Elementos de Informática", true, true, new ArrayList<>(), 1, 1);
+        Materia algebra = new Materia("MA045", "Álgebra", true, true, new ArrayList<>(), 1, 1);
+        Materia epa = new Materia("IF002", "EPA", true, true, new ArrayList<>(), 1, 1);
+    
+        // Crear materias del primer año, segundo cuatrimestre
+        ArrayList<Materia> correlativasAyP = new ArrayList<>();
+        correlativasAyP.add(epa);
+        Materia aypI = new Materia("IF003", "Algorítmica y Programación I", true, true, correlativasAyP, 2, 1);
+        
+        Materia analisisMatematico = new Materia("MA046", "Análisis Matemático", true, true, new ArrayList<>(), 2, 1);
+        Materia elementosLogica = new Materia("MA00", "Elementos de Lógica", true, true, new ArrayList<>(), 2, 1);
+    
+        // Crear materias del segundo año, primer cuatrimestre
+        ArrayList<Materia> correlativasEstadistica = new ArrayList<>();
+        correlativasEstadistica.add(algebra);
+        correlativasEstadistica.add(analisisMatematico);
+        Materia estadistica = new Materia("MA008", "Estadística", true, true, correlativasEstadistica, 3, 2);
+    
+        ArrayList<Materia> correlativasAypII = new ArrayList<>();
+        correlativasAypII.add(aypI);
+        correlativasAypII.add(elementosLogica);
+        Materia algoritmicaII = new Materia("IF006", "Algorítmica II", true, true, correlativasAypII, 3, 2);
+    
+        Materia sistemasYOrg = new Materia("IF004", "Sistemas y Organizaciones", true, true, new ArrayList<>(), 3, 2);
+    
+        ArrayList<Materia> correlativasArqui = new ArrayList<>();
+        correlativasArqui.add(elementosInformatica);
+        Materia arquitectura = new Materia("IF005", "Arquitectura de Computadoras", false, true, correlativasArqui, 3, 2);
+    
+        // Crear materias del segundo año, segundo cuatrimestre
+        ArrayList<Materia> correlativasBD = new ArrayList<>();
+        correlativasBD.add(algoritmicaII);
+        Materia basesDeDatos = new Materia("IF007", "Bases de Datos I", true, true, correlativasBD, 4, 2);
+    
+        ArrayList<Materia> correlativasPOO = new ArrayList<>();
+        correlativasPOO.add(algoritmicaII);
+        Materia poo = new Materia("IF030", "POO", false, true, correlativasPOO, 4, 2);
+    
+        ArrayList<Materia> correlativasIngI = new ArrayList<>();
+        correlativasIngI.add(aypI);
+        Materia ingenieriaI = new Materia("IF031", "Ingeniería de Software I", true, true, correlativasIngI, 4, 2);
+    
+        // Crear materias del tercer año, primer cuatrimestre
+        ArrayList<Materia> correlativasLab = new ArrayList<>();
+        correlativasLab.add(algoritmicaII);
+        Materia labProgramacion = new Materia("IF009", "Laboratorio de Programación y Lenguajes", true, true, correlativasLab, 5, 3);
+    
+        ArrayList<Materia> correlativasIngII = new ArrayList<>();
+        correlativasIngII.add(ingenieriaI);
+        correlativasIngII.add(estadistica);
+        Materia ingenieriaII = new Materia("IF033", "Ingeniería de Software II", true, true, correlativasIngII, 5, 3);
+    
+        ArrayList<Materia> correlativasConcurrencia = new ArrayList<>();
+        correlativasConcurrencia.add(arquitectura);
+        correlativasConcurrencia.add(algoritmicaII);
+        Materia concurrencia = new Materia("IF038", "Introducción a la Concurrencia", true, true, correlativasConcurrencia, 5, 3);
+    
+        // Crear materias del tercer año, segundo cuatrimestre
+        ArrayList<Materia> correlativasSO = new ArrayList<>();
+        correlativasSO.add(concurrencia);
+        Materia sistemasOperativos = new Materia("IF037", "Sistemas Operativos", false, true, correlativasSO, 6, 3);
+    
+        ArrayList<Materia> correlativasLabSoft = new ArrayList<>();
+        correlativasLabSoft.add(basesDeDatos);
+        correlativasLabSoft.add(poo);
+        correlativasLabSoft.add(ingenieriaI);
+        Materia labSoftware = new Materia("IF055", "Laboratorio de Software", false, true, correlativasLabSoft, 6, 3);
+    
+        Materia seminario = new Materia("IF000", "Seminario de Aspectos Legales", true, true, new ArrayList<>(), 6, 3);
+    
+        // Agregar todas las materias al plan de estudio
+        planDeEstudio.agregarMateria(elementosInformatica);
+        planDeEstudio.agregarMateria(algebra);
+        planDeEstudio.agregarMateria(epa);
+        planDeEstudio.agregarMateria(aypI);
+        planDeEstudio.agregarMateria(analisisMatematico);
+        planDeEstudio.agregarMateria(elementosLogica);
+        planDeEstudio.agregarMateria(estadistica);
+        planDeEstudio.agregarMateria(algoritmicaII);
+        planDeEstudio.agregarMateria(sistemasYOrg);
+        planDeEstudio.agregarMateria(arquitectura);
+        planDeEstudio.agregarMateria(basesDeDatos);
+        planDeEstudio.agregarMateria(poo);
+        planDeEstudio.agregarMateria(ingenieriaI);
+        planDeEstudio.agregarMateria(labProgramacion);
+        planDeEstudio.agregarMateria(ingenieriaII);
+        planDeEstudio.agregarMateria(concurrencia);
+        planDeEstudio.agregarMateria(sistemasOperativos);
+        planDeEstudio.agregarMateria(labSoftware);
+        planDeEstudio.agregarMateria(seminario);
+        
+        // Asignar el plan de estudio a la carrera
+        carreraAnalista.setPlanDeEstudio(planDeEstudio);
+        
+        // Agregar la carrera a la lista de carreras
+        Carreras.add(carreraAnalista);
+    }
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    public void AgregarAlumno (String nombre, String apellido, String DNI, LocalDate fechaNacimiento){ 
+        // Primero verificar si ya existe un alumno con ese DNI
+        for (Alumno alumno : Alumnos) {
+            if (alumno.getDNI().trim().equalsIgnoreCase(DNI.trim())) {
+                throw new IllegalArgumentException("Ya existe un alumno con el DNI: " + DNI);
+            }
+        }
+        // Validar datos
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre no puede estar vacío");
+        }
+        if (apellido == null || apellido.trim().isEmpty()) {
+            throw new IllegalArgumentException("El apellido no puede estar vacío");
+        }
+        if (DNI == null || DNI.trim().isEmpty()) {
+            throw new IllegalArgumentException("El DNI no puede estar vacío");
+        }
+        if (fechaNacimiento == null) {
+            throw new IllegalArgumentException("La fecha de nacimiento no puede estar vacía");
+        }
+        if (fechaNacimiento.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("La fecha de nacimiento no puede ser futura");
+        }
+        Alumno nuevoAlumno = new Alumno(nombre, apellido, DNI, fechaNacimiento);
+        Alumnos.add(nuevoAlumno);
+    }
+    
+    public void InscripcionAlumnoCarrera(String NombreCarrera, int legajo) { 
+        for (Alumno nuevAlumno : Alumnos) {
+            if (nuevAlumno.getLegajo() == legajo) {
+                for (Carrera carrera : Carreras) {
+                    if (carrera.getNombreCarrera().equals(NombreCarrera)) {
+                        carrera.agregarAlumno(nuevAlumno);
+                        // Asignar la carrera al alumno
+                        nuevAlumno.setPropuesta(NombreCarrera);
+                        System.out.println("Alumno " + nuevAlumno.getNombre() + " " + nuevAlumno.getApellido() + " inscrito en la carrera " + NombreCarrera + " correctamente.");
+                        return; // Salir del método una vez que se encuentra y procesa al alumno
+                    }
+                }
+                System.out.println("No se encontró la carrera con el nombre proporcionado.");
+                return;
+            }
+        }
+        System.out.println("No se encontró ningún alumno con el legajo proporcionado.");
+    }
+    
+    public void agregarMateriaPlanDeEstudios(String codigoMateria, String nombreMateria, int numeroCuatrimestre, int anio, boolean obligatoria, String nombreCarrera, ArrayList<Materia> correlativas) {
+        // Buscar la carrera
+        for (Carrera carrera : Carreras) {
+            if (carrera.getNombreCarrera().equals(nombreCarrera)) {
+                // Crear la nueva materia
+                Materia nuevaMateria = new Materia(
+                    codigoMateria,
+                    nombreMateria,
+                    obligatoria,
+                    true,  // activa por defecto
+                    correlativas,
+                    numeroCuatrimestre,
+                    anio
+                );
+
+                // Agregar la materia al plan de estudios de la carrera
+                carrera.getPlanDeEstudio().agregarMateria(nuevaMateria);
+                return;
+            }
+        }
+        throw new IllegalArgumentException("No se encontró la carrera especificada: " + nombreCarrera);
+    }
+    
+    public void InscripcionAlumnoMateria(int legajoAlumno, String nombreMateria) {
+        for (Alumno alumno: Alumnos) {
+            if (alumno.getLegajo() == legajoAlumno) {
+                for (Carrera carrera: Carreras) {
+                    if (carrera.getNombreCarrera().equals(alumno.getPropuesta())) {
+                        ArrayList<Materia> planDeEstudio = carrera.getPlanDeEstudio().getListaDeMaterias();
+                        for (Materia materia: planDeEstudio) {
+                            if (materia.getNombreMateria().equals(nombreMateria)) {
+                                if (carrera.getPlanDeEstudio().puedeInscribirse(alumno, materia)) {
+                                    // Inscribir al alumno en la materia
+                                    alumno.agregarMateriaAHistoriaAcademica(materia, EstadoMateria.CURSANDO);
+                                    System.out.println("El alumno " + alumno.getNombre() + " " + alumno.getApellido() + " se ha podido inscribir correctamente a "+ materia.getNombreMateria());
+                                    return; // Salir del método una vez que se encuentra y procesa la materia
+                                } else {
+                                    System.out.println("El alumno "+ alumno.getNombre() + " " + alumno.getApellido() + " no cumple los requisitos para anotarse a "+ materia.getNombreMateria());
+                                    return;
+                                }
+                            }    
+                        }
+                        System.out.println("No se encontró la materia con el nombre proporcionado.");
+                        return;
+                    }
+                }
+                System.out.println("El alumno no está inscrito en ninguna carrera.");
+                return;
+            }
+        }
+        System.out.println("No se encontró ningún alumno con el legajo proporcionado.");
+    }
+
+    public boolean verificarAlumnoTerminacionCarrera(int legajoAlumno) {
+    for (Alumno alumno : Alumnos) {
+        if (alumno.getLegajo() == legajoAlumno) {
+            // Verificar si el alumno está inscrito en alguna carrera
+            if (alumno.getPropuesta() == null || alumno.getPropuesta().isEmpty()) {
+                System.out.println("El alumno no está inscrito en ninguna carrera.");
+                return false;
+            }
+            
+            // Buscar la carrera del alumno
+            for (Carrera carrera : Carreras) {
+                if (carrera.getNombreCarrera().equals(alumno.getPropuesta())) {
+                    ArrayList<Materia> planDeEstudio = carrera.getPlanDeEstudio().getListaDeMaterias();
+                    HistoriaAcademica historiaAcademica = alumno.getHistoriaAcademica();
+                    boolean materiasFinalizadas = true;
+                    
+                    // Verificar cada materia del plan de estudio
+                    for (Materia materia : planDeEstudio) {
+                        // Solo verificar materias obligatorias si no estamos en una materia optativa
+                        if (materia.getObligatoria()) {
+                            EstadoMateria estadoMateria = historiaAcademica.buscarMateria(materia.getCodigoMateria());
+                            if (estadoMateria != EstadoMateria.FINALIZADA) {
+                                materiasFinalizadas = false;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Verificar si se cumplió con las materias optativas requeridas
+                    int materiasOptativasRequeridas = carrera.getMateriaOptativasRequeridas();
+                    int materiasOptativasFinalizadas = 0;
+                    
+                    if (materiasOptativasRequeridas > 0) {
+                        for (Materia materia : planDeEstudio) {
+                            if (!materia.getObligatoria()) {
+                                EstadoMateria estadoMateria = historiaAcademica.buscarMateria(materia.getCodigoMateria());
+                                if (estadoMateria == EstadoMateria.FINALIZADA) {
+                                    materiasOptativasFinalizadas++;
+                                }
+                            }
+                        }
+                        
+                        if (materiasOptativasFinalizadas < materiasOptativasRequeridas) {
+                            materiasFinalizadas = false;
+                        }
+                    }
+                    
+                    // Resultado de la verificación
+                    if (materiasFinalizadas) {
+                        System.out.println("El alumno " + alumno.getNombre() + " ha terminado la carrera " + alumno.getPropuesta());
+                        return true;
+                    } else {
+                        System.out.println("El alumno " + alumno.getNombre() + " no ha terminado la carrera " + alumno.getPropuesta());
+                        return false;
+                    }
+                }
+            }
+            
+            // Si llegamos aquí es porque no se encontró la carrera
+            System.out.println("No se encontró la carrera del alumno.");
+            return false;
+        }
+    }
+    
+    // Si llegamos aquí es porque no se encontró al alumno
+    System.out.println("No se encontró ningún alumno con el legajo proporcionado.");
+    return false;
+}
+
+
+    public ArrayList<Carrera> getListaDeCarreras() {
+        return Carreras;
+    }
+
+    public ArrayList<Alumno> getListaDeAlumnos() {
+        return Alumnos;
+    }
+
+    public ArrayList<Alumno> getListaDeAlumnosDeCarrera(String nombreCarrera) {
+        ArrayList<Alumno> alumnosDeCarrera = new ArrayList<>();
+        for (Alumno alumno : Alumnos) {
+            if (alumno.getPropuesta().equals(nombreCarrera)) {
+                alumnosDeCarrera.add(alumno);
+            }
+        }
+        return alumnosDeCarrera;
+    }
+
+    public HistoriaAcademica getHistoriaAcademicaDeAlumno(int legajoAlumno) {
+        for (Alumno alumno : Alumnos) {
+            if (alumno.getLegajo() == legajoAlumno) {
+                return alumno.getHistoriaAcademica();
+            }
+        }
+        return null; // Devolver null si no se encuentra el alumno con el legajo proporcionado
+    }
+
+    public ArrayList<Materia> getMateria() {
+        ArrayList<Materia> todasLasMaterias = new ArrayList<>();
+        for (Carrera carrera : Carreras) {
+            todasLasMaterias.addAll(carrera.getPlanDeEstudio().getListaDeMaterias());
+        }
+        return todasLasMaterias;
+    }
+
+}
