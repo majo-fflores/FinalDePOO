@@ -135,10 +135,14 @@ private Gestion gestion;
         );
     }// </editor-fold>//GEN-END:initComponents
     private void cargarDatos() {
-        // Cargar materias
+        // Cargar materias - mostrando tanto código como nombre
         DefaultComboBoxModel<String> modelMaterias = new DefaultComboBoxModel<>();
+
+        System.out.println("Cargando lista de materias en el ComboBox:");
         for (Materia materia : gestion.getMateria()) {
-            modelMaterias.addElement(materia.getNombreMateria());
+            String infoMateria = materia.getCodigoMateria() + " - " + materia.getNombreMateria();
+            modelMaterias.addElement(infoMateria);
+            System.out.println("- Añadida materia: '" + infoMateria + "'");
         }
         seleccionarMateriaBoxInscripcionMateria.setModel(modelMaterias);
 
@@ -149,6 +153,7 @@ private Gestion gestion;
         }
         seleccionarAlumnoBoxInscripcionMateria.setModel(modelAlumnos);
     }
+
     private void seleccionarAlumnoBoxInscripcionMateriaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_seleccionarAlumnoBoxInscripcionMateriaActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_seleccionarAlumnoBoxInscripcionMateriaActionPerformed
@@ -158,40 +163,62 @@ private Gestion gestion;
     }//GEN-LAST:event_seleccionarMateriaBoxInscripcionMateriaActionPerformed
 
     private void btnInscripcionCarreraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInscripcionCarreraActionPerformed
-        // Validar selección de carrera y alumno
-        if (seleccionarMateriaBoxInscripcionMateria.getSelectedIndex() == -1) {
-            mostrarDialogoCentrado( "Por favor, seleccione una materia.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+    // Validar selección de materia y alumno
+    if (seleccionarMateriaBoxInscripcionMateria.getSelectedIndex() == -1) {
+        mostrarDialogoCentrado("Por favor, seleccione una materia.", "Error", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
 
-        if (seleccionarAlumnoBoxInscripcionMateria.getSelectedIndex() == -1) {
-            mostrarDialogoCentrado("Por favor, seleccione un alumno.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+    if (seleccionarAlumnoBoxInscripcionMateria.getSelectedIndex() == -1) {
+        mostrarDialogoCentrado("Por favor, seleccione un alumno.", "Error", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
 
-        // Obtener carrera y alumno seleccionados
-        String materiaSeleccionada = (String) seleccionarMateriaBoxInscripcionMateria.getSelectedItem();
-        String alumnoSeleccionado = (String) seleccionarAlumnoBoxInscripcionMateria.getSelectedItem();
+    // Obtener materia y alumno seleccionados
+    String materiaSeleccionada = (String) seleccionarMateriaBoxInscripcionMateria.getSelectedItem();
+    String alumnoSeleccionado = (String) seleccionarAlumnoBoxInscripcionMateria.getSelectedItem();
 
-        // Extraer el legajo del alumno
-        int legajo = Integer.parseInt(alumnoSeleccionado.split(" - ")[0]);
+    System.out.println("Materia seleccionada: '" + materiaSeleccionada + "'");
+    System.out.println("Alumno seleccionado: '" + alumnoSeleccionado + "'");
 
-        try {
-            // Realizar la inscripción
-            gestion.InscripcionAlumnoMateria(legajo, materiaSeleccionada);
+    // Extraer el legajo del alumno
+    int legajo = Integer.parseInt(alumnoSeleccionado.split(" - ")[0]);
+    
+    // Extraer el código de materia (la primera parte antes del guión)
+    String codigoMateria = materiaSeleccionada.split(" - ")[0].trim();
 
+    try {
+        // Realizar la inscripción usando el código de la materia y capturar el resultado
+        String resultado = gestion.InscripcionAlumnoMateria(legajo, codigoMateria);
+
+        // Determinar si el resultado indica éxito o error
+        if (resultado.contains("se ha inscrito correctamente")) {
             // Mostrar mensaje de éxito
             mostrarDialogoCentrado(
-                "Alumno inscrito correctamente en la materia " + materiaSeleccionada,
+                resultado,
                 "Inscripción Exitosa",
                 JOptionPane.INFORMATION_MESSAGE);
-        } catch (HeadlessException e) {
-            // Mostrar cualquier error que ocurra durante la inscripción
+        } else if (resultado.contains("no cumple los requisitos")) {
+            // Mostrar mensaje de error de requisitos
             mostrarDialogoCentrado(
-                "Error al inscribir al alumno: " + e.getMessage(),
+                resultado,
+                "Requisitos no cumplidos",
+                JOptionPane.WARNING_MESSAGE);
+        } else {
+            // Mostrar cualquier otro tipo de mensaje como error
+            mostrarDialogoCentrado(
+                resultado,
                 "Error de Inscripción",
                 JOptionPane.ERROR_MESSAGE);
         }
+    } catch (Exception e) {
+        // Capturar cualquier error que ocurra durante la inscripción
+        mostrarDialogoCentrado(
+            "Error al inscribir al alumno: " + e.getMessage(),
+            "Error de Inscripción",
+            JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace(); // Mostrar detalles en la consola para depuración
+    }
     }//GEN-LAST:event_btnInscripcionCarreraActionPerformed
 
     // Método para mostrar diálogos centrados en la pantalla y ajustados a la izquierda

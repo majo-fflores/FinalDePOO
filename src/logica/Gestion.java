@@ -11,7 +11,12 @@ public class Gestion {
         Alumnos = new ArrayList<>();
     }
 
-    public void AgregarCarrera (String nombreCarrera,int tipoPlan, int duracionCarrera){
+    public void AgregarCarrera(String nombreCarrera, int tipoPlan, int duracionCarrera) {
+        // Verificar si ya existe una carrera con el mismo nombre
+        if (existeCarrera(nombreCarrera)) {
+            throw new IllegalArgumentException("Ya existe una carrera con el nombre '" + nombreCarrera + "'");
+        }
+
         Carrera nuevaCarrera = new Carrera(nombreCarrera);
 
         // Asignar el plan de estudio adecuado según el tipo proporcionado
@@ -39,18 +44,21 @@ public class Gestion {
         }
 
         nuevaCarrera.setPlanDeEstudio(planDeEstudio);
+        nuevaCarrera.setDuracionCarrera(duracionCarrera);
         Carreras.add(nuevaCarrera);
     }
 
+    
 
     //--------------------------------------------- AGREGAR CARRERAS -----------------------------------------------
     public void AgregarCarreraAnalista() {
         // Crear la carrera
         Carrera carreraAnalista = new Carrera("Analista en Sistemas");
-        carreraAnalista.setMateriaOptativasRequeridas(1);
+        carreraAnalista.setMateriaOptativasRequeridas(3);
         
         // Crear plan de estudio (usando PlanE como ejemplo)
-        PlanDeEstudio planDeEstudio = new PlanE();
+        PlanDeEstudio planDeEstudio = new PlanA();
+        carreraAnalista.setDuracionCarrera(3);
         
         // Crear materias del primer año, primer cuatrimestre
         Materia elementosInformatica = new Materia("IF001", "Elementos de Informática", true, true, new ArrayList<>(), 1, 1);
@@ -152,13 +160,7 @@ public class Gestion {
     }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    public void AgregarAlumno (String nombre, String apellido, String DNI, LocalDate fechaNacimiento){ 
-        // Primero verificar si ya existe un alumno con ese DNI
-        for (Alumno alumno : Alumnos) {
-            if (alumno.getDNI().trim().equalsIgnoreCase(DNI.trim())) {
-                throw new IllegalArgumentException("Ya existe un alumno con el DNI: " + DNI);
-            }
-        }
+    public void AgregarAlumno(String nombre, String apellido, String DNI, LocalDate fechaNacimiento) {
         // Validar datos
         if (nombre == null || nombre.trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre no puede estar vacío");
@@ -175,6 +177,19 @@ public class Gestion {
         if (fechaNacimiento.isAfter(LocalDate.now())) {
             throw new IllegalArgumentException("La fecha de nacimiento no puede ser futura");
         }
+
+        // Normalizar el DNI para comparación (eliminar espacios y convertir a minúsculas)
+        String dniNormalizado = DNI.trim().toLowerCase();
+
+        // Verificar si ya existe un alumno con ese DNI
+        for (Alumno alumno : Alumnos) {
+            String dniExistente = alumno.getDNI().trim().toLowerCase();
+            if (dniExistente.equals(dniNormalizado)) {
+                throw new IllegalArgumentException("ERROR_ALUMNO_EXISTENTE: Ya existe un alumno registrado con el DNI: " + DNI);
+            }
+        }
+
+        // Si pasó todas las validaciones, crear y agregar el alumno
         Alumno nuevoAlumno = new Alumno(nombre, apellido, DNI, fechaNacimiento);
         Alumnos.add(nuevoAlumno);
     }
@@ -221,35 +236,252 @@ public class Gestion {
         throw new IllegalArgumentException("No se encontró la carrera especificada: " + nombreCarrera);
     }
     
-    public void InscripcionAlumnoMateria(int legajoAlumno, String nombreMateria) {
-        for (Alumno alumno: Alumnos) {
-            if (alumno.getLegajo() == legajoAlumno) {
-                for (Carrera carrera: Carreras) {
-                    if (carrera.getNombreCarrera().equals(alumno.getPropuesta())) {
-                        ArrayList<Materia> planDeEstudio = carrera.getPlanDeEstudio().getListaDeMaterias();
+public String InscripcionAlumnoMateria(int legajoAlumno, String referenciaMateria) {
+    String mensaje;
+    boolean encontroMateria = false;
+    
+    for (Alumno alumno: Alumnos) {
+        if (alumno.getLegajo() == legajoAlumno) {
+            // Verificar si el alumno está inscrito en alguna carrera
+            if (alumno.getPropuesta() == null || alumno.getPropuesta().isEmpty()) {
+                mensaje = "El alumno " + alumno.getNombre() + " " + alumno.getApellido() + " no está inscrito en ninguna carrera.";
+                System.out.println(mensaje);
+                return mensaje;
+            }
+            
+            for (Carrera carrera: Carreras) {
+                if (carrera.getNombreCarrera().equals(alumno.getPropuesta())) {
+                    ArrayList<Materia> planDeEstudio = carrera.getPlanDeEstudio().getListaDeMaterias();
+                    
+                    // Imprimir información para depuración
+                    System.out.println("Buscando materia: '" + referenciaMateria + "'");
+                    System.out.println("Materias disponibles en el plan de estudio:");
+                    for (Materia m : planDeEstudio) {
+                        System.out.println("- Código: '" + m.getCodigoMateria() + "', Nombre: '" + m.getNombreMateria() + "'");
+                    }
+                    
+                    // Eliminar por completo los caracteres especiales para una comparación más simple
+                    String referenciaBuscadaSimplificada = referenciaMateria.toLowerCase()
+                                                          .trim()
+                                                          .replaceAll("[^a-z0-9 ]", "")
+                                                          .replaceAll("\\s+", " ");
+                    
+                    System.out.println("Referencia de materia simplificada para búsqueda: '" + referenciaBuscadaSimplificada + "'");
+                    
+                    // Primero buscamos una coincidencia exacta por código
+                    for (Materia materia: planDeEstudio) {
+                        if (materia.getCodigoMateria().equalsIgnoreCase(referenciaMateria.trim())) {
+                            encontroMateria = true;
+                            System.out.println("Coincidencia exacta encontrada por código: " + materia.getCodigoMateria());
+                            
+                            // Verificar si el alumno ya está inscrito en la materia
+                            HistoriaAcademica historia = alumno.getHistoriaAcademica();
+                            EstadoMateria estadoActual = historia.buscarMateria(materia.getCodigoMateria());
+                            if (estadoActual == EstadoMateria.CURSANDO || estadoActual == EstadoMateria.FINALIZADA) {
+                                mensaje = "El alumno " + alumno.getNombre() + " " + alumno.getApellido() + 
+                                       " ya está inscrito o ya finalizó la materia " + materia.getNombreMateria();
+                                System.out.println(mensaje);
+                                return mensaje;
+                            }
+                            
+                            if (carrera.getPlanDeEstudio().puedeInscribirse(alumno, materia)) {
+                                // Inscribir al alumno en la materia
+                                alumno.agregarMateriaAHistoriaAcademica(materia, EstadoMateria.CURSANDO);
+                                mensaje = "El alumno " + alumno.getNombre() + " " + alumno.getApellido() + 
+                                         " se ha inscrito correctamente a "+ materia.getNombreMateria() + " (código: " + materia.getCodigoMateria() + ")";
+                                System.out.println(mensaje);
+                                return mensaje;
+                            } else {
+                                mensaje = "El alumno " + alumno.getNombre() + " " + alumno.getApellido() + 
+                                          " no cumple los requisitos para anotarse a "+ materia.getNombreMateria();
+                                System.out.println(mensaje);
+                                return mensaje;
+                            }
+                        }
+                    }
+                    
+                    // Si no encontramos por código, buscamos por nombre exacto
+                    if (!encontroMateria) {
                         for (Materia materia: planDeEstudio) {
-                            if (materia.getNombreMateria().equals(nombreMateria)) {
+                            // Simplificar el nombre de la materia de la misma manera
+                            String nombreMateriaSimplificado = materia.getNombreMateria().toLowerCase()
+                                                                 .trim()
+                                                                 .replaceAll("[^a-z0-9 ]", "")
+                                                                 .replaceAll("\\s+", " ");
+                            
+                            System.out.println("Comparando con nombre: '" + nombreMateriaSimplificado + "'");
+                            
+                            // Comparar versiones simplificadas
+                            if (nombreMateriaSimplificado.equals(referenciaBuscadaSimplificada)) {
+                                encontroMateria = true;
+                                System.out.println("¡Coincidencia exacta encontrada por nombre!");
+                                
+                                // Verificar si el alumno ya está inscrito en la materia
+                                HistoriaAcademica historia = alumno.getHistoriaAcademica();
+                                EstadoMateria estadoActual = historia.buscarMateria(materia.getCodigoMateria());
+                                if (estadoActual == EstadoMateria.CURSANDO || estadoActual == EstadoMateria.FINALIZADA) {
+                                    mensaje = "El alumno " + alumno.getNombre() + " " + alumno.getApellido() + 
+                                           " ya está inscrito o ya finalizó la materia " + materia.getNombreMateria();
+                                    System.out.println(mensaje);
+                                    return mensaje;
+                                }
+                                
                                 if (carrera.getPlanDeEstudio().puedeInscribirse(alumno, materia)) {
                                     // Inscribir al alumno en la materia
                                     alumno.agregarMateriaAHistoriaAcademica(materia, EstadoMateria.CURSANDO);
-                                    System.out.println("El alumno " + alumno.getNombre() + " " + alumno.getApellido() + " se ha podido inscribir correctamente a "+ materia.getNombreMateria());
-                                    return; // Salir del método una vez que se encuentra y procesa la materia
+                                    mensaje = "El alumno " + alumno.getNombre() + " " + alumno.getApellido() + 
+                                             " se ha inscrito correctamente a "+ materia.getNombreMateria() + " (código: " + materia.getCodigoMateria() + ")";
+                                    System.out.println(mensaje);
+                                    return mensaje;
                                 } else {
-                                    System.out.println("El alumno "+ alumno.getNombre() + " " + alumno.getApellido() + " no cumple los requisitos para anotarse a "+ materia.getNombreMateria());
-                                    return;
+                                    mensaje = "El alumno "+ alumno.getNombre() + " " + alumno.getApellido() + 
+                                              " no cumple los requisitos para anotarse a "+ materia.getNombreMateria();
+                                    System.out.println(mensaje);
+                                    return mensaje;
                                 }
-                            }    
+                            }
                         }
-                        System.out.println("No se encontró la materia con el nombre proporcionado.");
-                        return;
                     }
+                    
+                    if (!encontroMateria) {
+                        mensaje = "No se encontró la materia '" + referenciaMateria + "' en el plan de estudios.";
+                        System.out.println(mensaje);
+                        
+                        // Búsqueda aproximada como último recurso
+                        System.out.println("Intentando búsqueda aproximada...");
+                        for (Materia materia: planDeEstudio) {
+                            // Verificar si la referencia está contenida en el código
+                            if (materia.getCodigoMateria().toLowerCase().contains(referenciaBuscadaSimplificada)) {
+                                System.out.println("Posible coincidencia aproximada encontrada por código: " + materia.getCodigoMateria());
+                                
+                                // Verificar si el alumno ya está inscrito en la materia
+                                HistoriaAcademica historia = alumno.getHistoriaAcademica();
+                                EstadoMateria estadoActual = historia.buscarMateria(materia.getCodigoMateria());
+                                if (estadoActual == EstadoMateria.CURSANDO || estadoActual == EstadoMateria.FINALIZADA) {
+                                    mensaje = "El alumno " + alumno.getNombre() + " " + alumno.getApellido() + 
+                                           " ya está inscrito o ya finalizó la materia " + materia.getNombreMateria();
+                                    System.out.println(mensaje);
+                                    return mensaje;
+                                }
+                                
+                                if (carrera.getPlanDeEstudio().puedeInscribirse(alumno, materia)) {
+                                    alumno.agregarMateriaAHistoriaAcademica(materia, EstadoMateria.CURSANDO);
+                                    mensaje = "El alumno " + alumno.getNombre() + " " + alumno.getApellido() + 
+                                             " se ha inscrito correctamente a "+ materia.getNombreMateria() + " (código: " + materia.getCodigoMateria() + ")";
+                                    System.out.println(mensaje);
+                                    return mensaje;
+                                } else {
+                                    mensaje = "El alumno "+ alumno.getNombre() + " " + alumno.getApellido() + 
+                                              " no cumple los requisitos para anotarse a "+ materia.getNombreMateria();
+                                    System.out.println(mensaje);
+                                    return mensaje;
+                                }
+                            }
+                            
+                            // Verificar si la referencia está contenida en el nombre
+                            String nombreMateriaSimplificado = materia.getNombreMateria().toLowerCase()
+                                                                .trim()
+                                                                .replaceAll("[^a-z0-9 ]", "");
+                            
+                            if (nombreMateriaSimplificado.contains(referenciaBuscadaSimplificada) || 
+                                referenciaBuscadaSimplificada.contains(nombreMateriaSimplificado)) {
+                                
+                                System.out.println("Posible coincidencia aproximada encontrada por nombre: " + materia.getNombreMateria());
+                                
+                                // Verificar si el alumno ya está inscrito en la materia
+                                HistoriaAcademica historia = alumno.getHistoriaAcademica();
+                                EstadoMateria estadoActual = historia.buscarMateria(materia.getCodigoMateria());
+                                if (estadoActual == EstadoMateria.CURSANDO || estadoActual == EstadoMateria.FINALIZADA) {
+                                    mensaje = "El alumno " + alumno.getNombre() + " " + alumno.getApellido() + 
+                                           " ya está inscrito o ya finalizó la materia " + materia.getNombreMateria();
+                                    System.out.println(mensaje);
+                                    return mensaje;
+                                }
+                                
+                                if (carrera.getPlanDeEstudio().puedeInscribirse(alumno, materia)) {
+                                    alumno.agregarMateriaAHistoriaAcademica(materia, EstadoMateria.CURSANDO);
+                                    mensaje = "El alumno " + alumno.getNombre() + " " + alumno.getApellido() + 
+                                             " se ha inscrito correctamente a "+ materia.getNombreMateria() + " (código: " + materia.getCodigoMateria() + ")";
+                                    System.out.println(mensaje);
+                                    return mensaje;
+                                } else {
+                                    mensaje = "El alumno "+ alumno.getNombre() + " " + alumno.getApellido() + 
+                                              " no cumple los requisitos para anotarse a "+ materia.getNombreMateria();
+                                    System.out.println(mensaje);
+                                    return mensaje;
+                                }
+                            }
+                        }
+                        return mensaje;
+                    }
+                    mensaje = "No se pudo procesar la inscripción a la materia.";
+                    return mensaje;
                 }
-                System.out.println("El alumno no está inscrito en ninguna carrera.");
-                return;
+            }
+            mensaje = "El alumno " + alumno.getNombre() + " " + alumno.getApellido() + " no está inscrito en ninguna carrera.";
+            return mensaje;
+        }
+    }
+    mensaje = "No se encontró ningún alumno con el legajo proporcionado.";
+    return mensaje;
+}
+/**
+ * Método auxiliar para buscar una materia por código o nombre
+ * @param codigoONombre El código o nombre de la materia a buscar
+ * @return La materia encontrada, o null si no se encuentra
+ */
+public Materia buscarMateria(String codigoONombre) {
+    if (codigoONombre == null || codigoONombre.trim().isEmpty()) {
+        return null;
+    }
+    
+    String busquedaSimplificada = codigoONombre.toLowerCase()
+                                   .trim()
+                                   .replaceAll("[^a-z0-9 ]", "")
+                                   .replaceAll("\\s+", " ");
+    
+    for (Carrera carrera : Carreras) {
+        ArrayList<Materia> materias = carrera.getPlanDeEstudio().getListaDeMaterias();
+        for (Materia materia : materias) {
+            // Búsqueda exacta por código
+            if (materia.getCodigoMateria().equalsIgnoreCase(codigoONombre.trim())) {
+                return materia;
+            }
+            
+            // Búsqueda exacta por nombre
+            String nombreSimplificado = materia.getNombreMateria().toLowerCase()
+                                         .trim()
+                                         .replaceAll("[^a-z0-9 ]", "")
+                                         .replaceAll("\\s+", " ");
+            if (nombreSimplificado.equals(busquedaSimplificada)) {
+                return materia;
             }
         }
-        System.out.println("No se encontró ningún alumno con el legajo proporcionado.");
     }
+    
+    // Búsqueda aproximada
+    for (Carrera carrera : Carreras) {
+        ArrayList<Materia> materias = carrera.getPlanDeEstudio().getListaDeMaterias();
+        for (Materia materia : materias) {
+            // Búsqueda por contenido en código
+            if (materia.getCodigoMateria().toLowerCase().contains(busquedaSimplificada)) {
+                return materia;
+            }
+            
+            // Búsqueda por contenido en nombre
+            String nombreSimplificado = materia.getNombreMateria().toLowerCase()
+                                         .trim()
+                                         .replaceAll("[^a-z0-9 ]", "");
+            
+            if (nombreSimplificado.contains(busquedaSimplificada) || 
+                busquedaSimplificada.contains(nombreSimplificado)) {
+                return materia;
+            }
+        }
+    }
+    
+    return null; // No se encontró ninguna materia
+}
 
     public boolean verificarAlumnoTerminacionCarrera(int legajoAlumno) {
     for (Alumno alumno : Alumnos) {
@@ -349,11 +581,55 @@ public class Gestion {
     }
 
     public ArrayList<Materia> getMateria() {
+        // Crear una lista para almacenar todas las materias
         ArrayList<Materia> todasLasMaterias = new ArrayList<>();
+
+        // Recorrer todas las carreras y obtener sus materias
         for (Carrera carrera : Carreras) {
-            todasLasMaterias.addAll(carrera.getPlanDeEstudio().getListaDeMaterias());
+            ArrayList<Materia> materiasCarrera = carrera.getListaDeMaterias();
+            if (materiasCarrera != null) {
+                // Para evitar duplicados, verificamos si la materia ya está en la lista
+                for (Materia materia : materiasCarrera) {
+                    boolean existe = false;
+                    for (Materia m : todasLasMaterias) {
+                        if (m.getCodigoMateria().equals(materia.getCodigoMateria())) {
+                            existe = true;
+                            break;
+                        }
+                    }
+                    if (!existe) {
+                        todasLasMaterias.add(materia);
+                    }
+                }
+            }
         }
+
         return todasLasMaterias;
+    }
+    
+    public boolean existeCarrera(String nombreCarrera) {
+        if (nombreCarrera == null || nombreCarrera.trim().isEmpty()) {
+            return false;
+        }
+
+        // Normalizar el nombre para comparación: convertir a minúsculas y eliminar espacios extra
+        String nombreNormalizado = normalizarNombre(nombreCarrera);
+
+        for (Carrera carrera : Carreras) {
+            String nombreExistente = normalizarNombre(carrera.getNombreCarrera());
+            if (nombreExistente.equals(nombreNormalizado)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Método auxiliar para normalizar nombres para comparación
+    private String normalizarNombre(String nombre) {
+        return nombre.toLowerCase()
+                    .trim()
+                    .replaceAll("\\s+", " "); // Reemplaza múltiples espacios con uno solo
     }
 
 }

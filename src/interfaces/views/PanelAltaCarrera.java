@@ -4,7 +4,6 @@
  */
 package interfaces.views;
 import java.awt.Color;
-import java.awt.Color;
 import java.awt.HeadlessException;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;

@@ -221,8 +221,7 @@ private Gestion gestion;
                 apellido.isEmpty() || apellido.equals(" Ingresar Apellido") ||
                 dni.isEmpty() || dni.equals(" Ingresar DNI") ||
                 fechaNacimientoStr.isEmpty() || fechaNacimientoStr.equals(" Ingresar Fecha de Nacimiento (AAAA-MM-DD)")) {
-                
-                // Usar el nuevo método para mostrar diálogos centrados
+
                 mostrarDialogoCentrado(
                     "Por favor complete todos los campos obligatorios.",
                     "Error de Validación",
@@ -230,10 +229,19 @@ private Gestion gestion;
                 return;
             }
 
-            // Validar longitud mínima del DNI
-            if (dni.length() < 3) {
+            // Validar longitud del DNI (mínimo 7 y máximo 10 caracteres)
+            if (dni.length() < 7 || dni.length() > 10) {
                 mostrarDialogoCentrado(
-                    "El DNI ingresado no es válido.",
+                    "El DNI debe tener entre 7 y 10 caracteres.",
+                    "Error de Validación",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Validar que el DNI contenga solo números
+            if (!dni.matches("\\d+")) {
+                mostrarDialogoCentrado(
+                    "El DNI debe contener solo números.",
                     "Error de Validación",
                     JOptionPane.ERROR_MESSAGE);
                 return;
@@ -274,18 +282,33 @@ private Gestion gestion;
                 limpiarCampos();
 
             } catch (IllegalArgumentException ex) {
-                // Capturar error si el alumno ya existe
+                // Verificar si es un error de alumno existente o de datos inválidos
+                String mensaje = ex.getMessage();
+                if (mensaje != null && mensaje.startsWith("ERROR_ALUMNO_EXISTENTE:")) {
+                    // Es un error de alumno duplicado
+                    mostrarDialogoCentrado(
+                        mensaje.substring("ERROR_ALUMNO_EXISTENTE:".length()),
+                        "Alumno ya registrado",
+                        JOptionPane.WARNING_MESSAGE);
+                } else {
+                    // Es otro tipo de error de datos
+                    mostrarDialogoCentrado(
+                        "Error en los datos: " + mensaje,
+                        "Datos inválidos",
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception ex) {
+                // Capturar cualquier otro error inesperado
                 mostrarDialogoCentrado(
-                    "Error al registrar el alumno: " + ex.getMessage(),
-                    "Error de Registro",
+                    "Error inesperado al procesar el registro: " + ex.getMessage(),
+                    "Error",
                     JOptionPane.ERROR_MESSAGE);
             }
-
         } catch (HeadlessException ex) {
-            // Capturar cualquier otro error inesperado
+            // Capturar errores relacionados con la interfaz de usuario
             mostrarDialogoCentrado(
-                "Error inesperado al procesar el registro: " + ex.getMessage(),
-                "Error",
+                "Error en la interfaz: " + ex.getMessage(),
+                "Error de sistema",
                 JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_subirAlumnoAltaBtnActionPerformed

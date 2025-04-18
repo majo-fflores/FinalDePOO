@@ -32,9 +32,23 @@ public class PanelPrincipal extends javax.swing.JFrame {
             inscripcionMateriaPerformed(evt);
         });
         
+        altaNotas.addActionListener((java.awt.event.ActionEvent evt) -> {
+            altaNotasPerformed(evt);
+        });
+        
+        materias.addActionListener((java.awt.event.ActionEvent evt) -> {
+            materiasPerformed(evt);
+        });
+        
+        carreras.addActionListener((java.awt.event.ActionEvent evt) -> {
+            carrerasPerformed(evt);
+        });
+        
         verificar.addActionListener((java.awt.event.ActionEvent evt) -> {
             verificarPerformed(evt);
         });
+        
+        
         
         contenidoInicial();
     }
@@ -334,14 +348,26 @@ public class PanelPrincipal extends javax.swing.JFrame {
         mostrarPanel(new PanelInscripcionMateria(gestion));
     }
     
+    private void alumnosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_alumnosActionPerformed
+        mostrarPanel(new PanelAlumnos(gestion));
+    }//GEN-LAST:event_alumnosActionPerformed
+
+    private void altaNotasPerformed(java.awt.event.ActionEvent evt){
+        mostrarPanel(new PanelAltaNotas(gestion));
+    }
+    
+    private void materiasPerformed(java.awt.event.ActionEvent evt){
+        mostrarPanel(new PanelMaterias(gestion));
+    }
+    
+    private void carrerasPerformed(java.awt.event.ActionEvent evt){
+        mostrarPanel(new PanelCarreras(gestion));
+    }
+    
     private void verificarPerformed(java.awt.event.ActionEvent evt){
         mostrarPanel(new PanelVerificacion(gestion));
     }
     
-    private void alumnosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_alumnosActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_alumnosActionPerformed
-
         /**
      * @param args the command line arguments
      */
