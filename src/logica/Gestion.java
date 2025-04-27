@@ -5,12 +5,31 @@ import java.util.ArrayList;
 public class Gestion {
     private ArrayList<Carrera> Carreras;
     private ArrayList<Alumno> Alumnos;
+    private ArrayList<Materia> materiasCatalogo; // Catálogo centralizado de materias
 
     public Gestion(){
         Carreras = new ArrayList<>();
         Alumnos = new ArrayList<>();
+        materiasCatalogo = new ArrayList<>();
     }
 
+    public Materia buscarOCrearMateria(String codigo, String nombreMateria, boolean obligatoria, 
+                                     boolean promocion, ArrayList<Materia> correlativas, 
+                                     int cuatrimestre, int anio) {
+        // Primero buscamos por código (identificador único)
+        for (Materia materia : materiasCatalogo) {
+            if (materia.getCodigoMateria().equals(codigo)) {
+                return materia; // Devolvemos la materia existente
+            }
+        }
+        
+        // Si no existe, la creamos
+        Materia nuevaMateria = new Materia(codigo, nombreMateria, obligatoria, promocion, 
+                                         correlativas, cuatrimestre, anio);
+        materiasCatalogo.add(nuevaMateria);
+        return nuevaMateria;
+    }
+    
     public void AgregarCarrera(String nombreCarrera, int tipoPlan, int duracionCarrera) {
         // Verificar si ya existe una carrera con el mismo nombre
         if (existeCarrera(nombreCarrera)) {
@@ -61,75 +80,75 @@ public class Gestion {
         carreraAnalista.setDuracionCarrera(3);
         
         // Crear materias del primer año, primer cuatrimestre
-        Materia elementosInformatica = new Materia("IF001", "Elementos de Informática", true, true, new ArrayList<>(), 1, 1);
-        Materia algebra = new Materia("MA045", "Álgebra", true, true, new ArrayList<>(), 1, 1);
-        Materia epa = new Materia("IF002", "EPA", true, true, new ArrayList<>(), 1, 1);
+        Materia elementosInformatica = buscarOCrearMateria("IF001", "Elementos de Informática", true, true, new ArrayList<>(), 1, 1);
+        Materia algebra = buscarOCrearMateria("MA045", "Álgebra", true, true, new ArrayList<>(), 1, 1);
+        Materia epa = buscarOCrearMateria("IF002", "EPA", true, true, new ArrayList<>(), 1, 1);
     
         // Crear materias del primer año, segundo cuatrimestre
         ArrayList<Materia> correlativasAyP = new ArrayList<>();
         correlativasAyP.add(epa);
-        Materia aypI = new Materia("IF003", "Algorítmica y Programación I", true, true, correlativasAyP, 2, 1);
+        Materia aypI = buscarOCrearMateria("IF003", "Algorítmica y Programación I", true, true, correlativasAyP, 2, 1);
         
-        Materia analisisMatematico = new Materia("MA046", "Análisis Matemático", true, true, new ArrayList<>(), 2, 1);
-        Materia elementosLogica = new Materia("MA00", "Elementos de Lógica", true, true, new ArrayList<>(), 2, 1);
+        Materia analisisMatematico = buscarOCrearMateria("MA046", "Análisis Matemático", true, true, new ArrayList<>(), 2, 1);
+        Materia elementosLogica = buscarOCrearMateria("MA00", "Elementos de Lógica", true, true, new ArrayList<>(), 2, 1);
     
         // Crear materias del segundo año, primer cuatrimestre
         ArrayList<Materia> correlativasEstadistica = new ArrayList<>();
         correlativasEstadistica.add(algebra);
         correlativasEstadistica.add(analisisMatematico);
-        Materia estadistica = new Materia("MA008", "Estadística", true, true, correlativasEstadistica, 3, 2);
+        Materia estadistica = buscarOCrearMateria("MA008", "Estadística", true, true, correlativasEstadistica, 3, 2);
     
         ArrayList<Materia> correlativasAypII = new ArrayList<>();
         correlativasAypII.add(aypI);
         correlativasAypII.add(elementosLogica);
-        Materia algoritmicaII = new Materia("IF006", "Algorítmica II", true, true, correlativasAypII, 3, 2);
+        Materia algoritmicaII = buscarOCrearMateria("IF006", "Algorítmica II", true, true, correlativasAypII, 3, 2);
     
-        Materia sistemasYOrg = new Materia("IF004", "Sistemas y Organizaciones", true, true, new ArrayList<>(), 3, 2);
+        Materia sistemasYOrg = buscarOCrearMateria("IF004", "Sistemas y Organizaciones", true, true, new ArrayList<>(), 3, 2);
     
         ArrayList<Materia> correlativasArqui = new ArrayList<>();
         correlativasArqui.add(elementosInformatica);
-        Materia arquitectura = new Materia("IF005", "Arquitectura de Computadoras", false, true, correlativasArqui, 3, 2);
+        Materia arquitectura = buscarOCrearMateria("IF005", "Arquitectura de Computadoras", false, true, correlativasArqui, 3, 2);
     
         // Crear materias del segundo año, segundo cuatrimestre
         ArrayList<Materia> correlativasBD = new ArrayList<>();
         correlativasBD.add(algoritmicaII);
-        Materia basesDeDatos = new Materia("IF007", "Bases de Datos I", true, true, correlativasBD, 4, 2);
+        Materia basesDeDatos = buscarOCrearMateria("IF007", "Bases de Datos I", true, true, correlativasBD, 4, 2);
     
         ArrayList<Materia> correlativasPOO = new ArrayList<>();
         correlativasPOO.add(algoritmicaII);
-        Materia poo = new Materia("IF030", "POO", false, true, correlativasPOO, 4, 2);
+        Materia poo = buscarOCrearMateria("IF030", "POO", false, true, correlativasPOO, 4, 2);
     
         ArrayList<Materia> correlativasIngI = new ArrayList<>();
         correlativasIngI.add(aypI);
-        Materia ingenieriaI = new Materia("IF031", "Ingeniería de Software I", true, true, correlativasIngI, 4, 2);
+        Materia ingenieriaI = buscarOCrearMateria("IF031", "Ingeniería de Software I", true, true, correlativasIngI, 4, 2);
     
         // Crear materias del tercer año, primer cuatrimestre
         ArrayList<Materia> correlativasLab = new ArrayList<>();
         correlativasLab.add(algoritmicaII);
-        Materia labProgramacion = new Materia("IF009", "Laboratorio de Programación y Lenguajes", true, true, correlativasLab, 5, 3);
+        Materia labProgramacion = buscarOCrearMateria("IF009", "Laboratorio de Programación y Lenguajes", true, true, correlativasLab, 5, 3);
     
         ArrayList<Materia> correlativasIngII = new ArrayList<>();
         correlativasIngII.add(ingenieriaI);
         correlativasIngII.add(estadistica);
-        Materia ingenieriaII = new Materia("IF033", "Ingeniería de Software II", true, true, correlativasIngII, 5, 3);
+        Materia ingenieriaII = buscarOCrearMateria("IF033", "Ingeniería de Software II", true, true, correlativasIngII, 5, 3);
     
         ArrayList<Materia> correlativasConcurrencia = new ArrayList<>();
         correlativasConcurrencia.add(arquitectura);
         correlativasConcurrencia.add(algoritmicaII);
-        Materia concurrencia = new Materia("IF038", "Introducción a la Concurrencia", true, true, correlativasConcurrencia, 5, 3);
+        Materia concurrencia = buscarOCrearMateria("IF038", "Introducción a la Concurrencia", true, true, correlativasConcurrencia, 5, 3);
     
         // Crear materias del tercer año, segundo cuatrimestre
         ArrayList<Materia> correlativasSO = new ArrayList<>();
         correlativasSO.add(concurrencia);
-        Materia sistemasOperativos = new Materia("IF037", "Sistemas Operativos", false, true, correlativasSO, 6, 3);
+        Materia sistemasOperativos = buscarOCrearMateria("IF037", "Sistemas Operativos", false, true, correlativasSO, 6, 3);
     
         ArrayList<Materia> correlativasLabSoft = new ArrayList<>();
         correlativasLabSoft.add(basesDeDatos);
         correlativasLabSoft.add(poo);
         correlativasLabSoft.add(ingenieriaI);
-        Materia labSoftware = new Materia("IF055", "Laboratorio de Software", false, true, correlativasLabSoft, 6, 3);
+        Materia labSoftware = buscarOCrearMateria("IF055", "Laboratorio de Software", false, true, correlativasLabSoft, 6, 3);
     
-        Materia seminario = new Materia("IF000", "Seminario de Aspectos Legales", true, true, new ArrayList<>(), 6, 3);
+        Materia seminario = buscarOCrearMateria("IF000", "Seminario de Aspectos Legales", true, true, new ArrayList<>(), 6, 3);
     
         // Agregar todas las materias al plan de estudio
         planDeEstudio.agregarMateria(elementosInformatica);
@@ -218,7 +237,7 @@ public class Gestion {
         for (Carrera carrera : Carreras) {
             if (carrera.getNombreCarrera().equals(nombreCarrera)) {
                 // Crear la nueva materia
-                Materia nuevaMateria = new Materia(
+                Materia nuevaMateria = buscarOCrearMateria(
                     codigoMateria,
                     nombreMateria,
                     obligatoria,
@@ -571,15 +590,6 @@ public Materia buscarMateria(String codigoONombre) {
         return alumnosDeCarrera;
     }
 
-    public HistoriaAcademica getHistoriaAcademicaDeAlumno(int legajoAlumno) {
-        for (Alumno alumno : Alumnos) {
-            if (alumno.getLegajo() == legajoAlumno) {
-                return alumno.getHistoriaAcademica();
-            }
-        }
-        return null; // Devolver null si no se encuentra el alumno con el legajo proporcionado
-    }
-
     public ArrayList<Materia> getMateria() {
         // Crear una lista para almacenar todas las materias
         ArrayList<Materia> todasLasMaterias = new ArrayList<>();
@@ -622,6 +632,16 @@ public Materia buscarMateria(String codigoONombre) {
             }
         }
 
+        return false;
+    }
+    
+    // Método para verificar si una materia existe en el catálogo
+    public boolean existeMateria(String codigoMateria) {
+        for (Materia materia : materiasCatalogo) {
+            if (materia.getCodigoMateria().equals(codigoMateria)) {
+                return true;
+            }
+        }
         return false;
     }
 

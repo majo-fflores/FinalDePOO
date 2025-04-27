@@ -321,20 +321,46 @@ private Gestion gestion;
             // Obtener los valores de los campos
             String codigoMateria = codigoMateriaAltaPlanDeEstudios.getText().trim();
             String nombreMateria = nombreMateriaAltaPlanDeEstudios.getText().trim();
-            int numeroCuatrimestre = Integer.parseInt(numeroCuatriMateriaAltaPlanDeEstudios.getText().trim());
-            int anio = Integer.parseInt(anioMateriaAltaPlanDeEstudios.getText().trim());
-            boolean obligatoria = obligatoriaCheckAltaPlanDeEstudios.isSelected();
-            String carreraSeleccionada = (String) seleccionarCarreraBoxAltaPlanDeEstudios.getSelectedItem();
-            
-            // Validaciones básicas
-            if (codigoMateria.isEmpty() || nombreMateria.isEmpty() || carreraSeleccionada == null) {
+            int numeroCuatrimestre;
+            int anio;
+
+            // Verificar si los campos son placeholders
+            if (codigoMateria.equals("  Ingrese el código de la materia") || 
+                nombreMateria.equals("  Ingrese el nombre de la materia") ||
+                numeroCuatriMateriaAltaPlanDeEstudios.getText().trim().equals("  Ingrese número de cuatrimestre de la materia") ||
+                anioMateriaAltaPlanDeEstudios.getText().trim().equals("  Ingrese año de la materia")) {
+
                 mostrarDialogoCentrado(
-                    "Todos los campos son obligatorios", 
+                    "Por favor, complete todos los campos requeridos", 
                     "Error", 
                     javax.swing.JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
+
+            // Intentar parsear los valores numéricos
+            try {
+                numeroCuatrimestre = Integer.parseInt(numeroCuatriMateriaAltaPlanDeEstudios.getText().trim());
+                anio = Integer.parseInt(anioMateriaAltaPlanDeEstudios.getText().trim());
+            } catch (NumberFormatException e) {
+                mostrarDialogoCentrado(
+                    "El número de cuatrimestre y año deben ser números válidos", 
+                    "Error", 
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            boolean obligatoria = obligatoriaCheckAltaPlanDeEstudios.isSelected();
+            String carreraSeleccionada = (String) seleccionarCarreraBoxAltaPlanDeEstudios.getSelectedItem();
+
+            // Validar que se haya seleccionado una carrera
+            if (carreraSeleccionada == null) {
+                mostrarDialogoCentrado(
+                    "Debe seleccionar una carrera", 
+                    "Error", 
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             // Obtener correlativas seleccionadas
             ArrayList<Materia> correlativas = new ArrayList<>();
             String correlativaSeleccionada = (String) seleccionarCorrelativaBoxAltaPlanDeEstudios.getSelectedItem();
@@ -351,29 +377,35 @@ private Gestion gestion;
                     }
                 }
             }
-            
-            // Agregar la materia
+
+            // Verificar si la materia ya existe
+            boolean materiaExiste = gestion.existeMateria(codigoMateria);
+            String mensaje;
+
+            // Agregar la materia al plan de estudios de la carrera
             gestion.agregarMateriaPlanDeEstudios(codigoMateria, nombreMateria, 
                 numeroCuatrimestre, anio, obligatoria, carreraSeleccionada, correlativas);
-            
+
+            // Mensaje según si la materia es nueva o existente
+            if (materiaExiste) {
+                mensaje = "Materia existente agregada al plan de estudios de " + carreraSeleccionada;
+            } else {
+                mensaje = "Nueva materia creada y agregada al plan de estudios de " + carreraSeleccionada;
+            }
+
             // Mostrar mensaje de éxito
             mostrarDialogoCentrado(
-                "Materia agregada exitosamente", 
+                mensaje, 
                 "Éxito", 
                 javax.swing.JOptionPane.INFORMATION_MESSAGE);
-            
+
             // Limpiar campos
             limpiarCampos();
-            
+
             // Actualizar ComboBox de correlativas
             actualizarComboBoxCorrelativas();
-            
-        } catch (NumberFormatException e) {
-            mostrarDialogoCentrado(
-                "El número de cuatrimestre y año deben ser números válidos", 
-                "Error", 
-                javax.swing.JOptionPane.ERROR_MESSAGE);
-        } catch (HeadlessException e) {
+
+        } catch (Exception e) {
             mostrarDialogoCentrado(
                 "Error al agregar la materia: " + e.getMessage(), 
                 "Error", 

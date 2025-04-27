@@ -371,9 +371,6 @@ public class PanelPrincipal extends javax.swing.JFrame {
         /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        // TODO code application logic here
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton altaAlumno;
