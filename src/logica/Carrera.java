@@ -77,7 +77,7 @@ public class Carrera {
         ArrayList<Materia> materias = planDeEstudio.getListaDeMaterias();
         
         boolean obligatoriasCompletas = materias.stream()
-            .filter(Materia::getObligatoria) // Solo verifica las obligatorias
+            .filter(Materia::getObligatoria) // Solo verifica las obligatorias esten finalizadas o promocionadas
             .allMatch(m -> {
                 EstadoMateria estado = historia.buscarMateria(m.getCodigoMateria());
                 return estado == EstadoMateria.FINALIZADA || 
@@ -85,7 +85,7 @@ public class Carrera {
             });
 
         long optativasAprobadas = materias.stream()
-            .filter(m -> !m.getObligatoria()) // Materias optativas: las que no son obligatorias
+            .filter(m -> !m.getObligatoria()) // Materias optativas: las que no son obligatorias esten finalizadas o promocionadas
             .filter(m -> {
                 EstadoMateria estado = historia.buscarMateria(m.getCodigoMateria());
                 return estado == EstadoMateria.FINALIZADA || 
@@ -93,7 +93,7 @@ public class Carrera {
             })
             .count();
 
-        
+        //devuelvo true si completo todas las obligatorias y optativaas
         return obligatoriasCompletas && 
                optativasAprobadas >= materiasOptativasRequeridas;
     }
