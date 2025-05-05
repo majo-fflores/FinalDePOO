@@ -191,8 +191,16 @@ public class PanelAltaNotas extends javax.swing.JPanel {
             return;
         }
 
+        //También verificar si está promocionada para no permitir cambio a regularizada
+        if (estadoActual == EstadoMateria.PROMOCIONADA && nuevoEstado == EstadoMateria.REGULARIZADA) {
+            mostrarDialogoCentrado(this, 
+                "No se puede cambiar el estado de una materia promocionada a regularizada.", 
+                "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
         // NUEVA VERIFICACIÓN: Si estamos finalizando una materia, verificar correlativas
-        if (nuevoEstado == EstadoMateria.FINALIZADA) {
+        if (nuevoEstado == EstadoMateria.FINALIZADA || nuevoEstado == EstadoMateria.PROMOCIONADA) {
             // Verificar que todas las correlativas estén finalizadas
             ArrayList<Materia> correlativas = materiaSeleccionada.getCorrelativas();
             if (correlativas != null && !correlativas.isEmpty()) {
@@ -201,8 +209,9 @@ public class PanelAltaNotas extends javax.swing.JPanel {
                 for (Materia correlativa : correlativas) {
                     EstadoMateria estadoCorrelativa = alumnoSeleccionado.getHistoriaAcademica()
                                                      .buscarMateria(correlativa.getCodigoMateria());
-
-                    if (estadoCorrelativa != EstadoMateria.FINALIZADA) {
+                    
+                    //Verificar si la correlativa está FINALIZADA o PROMOCIONADA
+                    if (estadoCorrelativa != EstadoMateria.FINALIZADA  && estadoCorrelativa != EstadoMateria.PROMOCIONADA) {
                         if (materiasNoFinalizadas.length() > 0) {
                             materiasNoFinalizadas.append(", ");
                         }
@@ -230,7 +239,7 @@ public class PanelAltaNotas extends javax.swing.JPanel {
         mostrarDialogoCentrado(this, mensaje, "Éxito", JOptionPane.INFORMATION_MESSAGE);
 
         // Si estamos finalizando una materia, verificamos si el alumno completó la carrera
-        if (nuevoEstado == EstadoMateria.FINALIZADA) {
+        if (nuevoEstado == EstadoMateria.FINALIZADA || nuevoEstado == EstadoMateria.PROMOCIONADA) {
             boolean completoCarrera = gestion.verificarAlumnoTerminacionCarrera(alumnoSeleccionado.getLegajo());
             if (completoCarrera) {
                 mostrarDialogoCentrado(this, 
