@@ -19,6 +19,8 @@ public class PanelAltaNotas extends javax.swing.JPanel {
     private ArrayList<Carrera> listaCarreras;
     private ArrayList<Alumno> listaAlumnos;
     private ArrayList<Materia> listaMaterias;
+    private ArrayList<Materia> listaMateriasFiltradas; // Nueva lista para almacenar materias filtradas
+
 
     /**
      * Creates new form PanelAltaNotas
@@ -122,13 +124,52 @@ public class PanelAltaNotas extends javax.swing.JPanel {
             return;
         }
 
-        String[] nombresMaterias = new String[listaMaterias.size()];
-        for (int i = 0; i < listaMaterias.size(); i++) {
-            Materia materia = listaMaterias.get(i);
-            nombresMaterias[i] = materia.getCodigoMateria() + " - " + materia.getNombreMateria();
+        // Verificamos si hay un alumno seleccionado para filtrar materias
+        int indexAlumno = seleccionarAlumnoBoxAltaNotas.getSelectedIndex();
+        if (listaAlumnos != null && !listaAlumnos.isEmpty() && indexAlumno >= 0 && 
+            !seleccionarAlumnoBoxAltaNotas.getSelectedItem().equals("No hay alumnos")) {
+            
+            // Obtenemos el alumno seleccionado
+            Alumno alumnoSeleccionado = listaAlumnos.get(indexAlumno);
+            
+            // Filtramos las materias que no estén finalizadas ni promocionadas
+            listaMateriasFiltradas = new ArrayList<>();
+            
+            for (Materia materia : listaMaterias) {
+                EstadoMateria estadoActual = alumnoSeleccionado.getHistoriaAcademica()
+                                           .buscarMateria(materia.getCodigoMateria());
+                
+                // Solo agregamos materias que no estén finalizadas ni promocionadas
+                if (estadoActual != EstadoMateria.FINALIZADA && estadoActual != EstadoMateria.PROMOCIONADA) {
+                    listaMateriasFiltradas.add(materia);
+                }
+            }
+            
+            // Si no hay materias para mostrar después del filtrado
+            if (listaMateriasFiltradas.isEmpty()) {
+                seleccionarMateriaBoxAltaNotas1.setModel(new DefaultComboBoxModel<>(
+                    new String[]{"No hay materias pendientes para este alumno"}));
+                return;
+            }
+            
+            // Cargamos solo las materias filtradas
+            String[] nombresMaterias = new String[listaMateriasFiltradas.size()];
+            for (int i = 0; i < listaMateriasFiltradas.size(); i++) {
+                Materia materia = listaMateriasFiltradas.get(i);
+                nombresMaterias[i] = materia.getCodigoMateria() + " - " + materia.getNombreMateria();
+            }
+            
+            seleccionarMateriaBoxAltaNotas1.setModel(new DefaultComboBoxModel<>(nombresMaterias));
+        } else {
+            // Si no hay alumno seleccionado, mostramos todas las materias
+            String[] nombresMaterias = new String[listaMaterias.size()];
+            for (int i = 0; i < listaMaterias.size(); i++) {
+                Materia materia = listaMaterias.get(i);
+                nombresMaterias[i] = materia.getCodigoMateria() + " - " + materia.getNombreMateria();
+            }
+            
+            seleccionarMateriaBoxAltaNotas1.setModel(new DefaultComboBoxModel<>(nombresMaterias));
         }
-
-        seleccionarMateriaBoxAltaNotas1.setModel(new DefaultComboBoxModel<>(nombresMaterias));
     }
     
     // Nuevo método que valida si se puede habilitar los botones
@@ -149,7 +190,9 @@ public class PanelAltaNotas extends javax.swing.JPanel {
             // Verificar que hay una materia seleccionada
             else {
                 String materiaSeleccionada = (String) seleccionarMateriaBoxAltaNotas1.getSelectedItem();
-                seleccionesValidas = !(materiaSeleccionada == null || materiaSeleccionada.equals("No hay materias"));
+                seleccionesValidas = !(materiaSeleccionada == null || 
+                                      materiaSeleccionada.equals("No hay materias") || 
+                                      materiaSeleccionada.equals("No hay materias pendientes para este alumno"));
             }
         }
         
@@ -158,7 +201,7 @@ public class PanelAltaNotas extends javax.swing.JPanel {
         btnFinalizoMateriaAltaNotas.setEnabled(seleccionesValidas);
     }
 
-    // Método para actualizar el estado de la materia
+ // Método para actualizar el estado de la materia
     private void actualizarEstadoMateria(EstadoMateria nuevoEstado) {
         // Verificar que hay selecciones válidas
         int indexAlumno = seleccionarAlumnoBoxAltaNotas.getSelectedIndex();
@@ -170,15 +213,20 @@ public class PanelAltaNotas extends javax.swing.JPanel {
             return;
         }
 
-        if (listaMaterias == null || listaMaterias.isEmpty() || indexMateria < 0 || 
-            seleccionarMateriaBoxAltaNotas1.getSelectedItem().equals("No hay materias")) {
+        // Verificamos si estamos usando la lista filtrada o la lista completa
+        ArrayList<Materia> listaActual = listaMateriasFiltradas != null && !listaMateriasFiltradas.isEmpty() ? 
+                                        listaMateriasFiltradas : listaMaterias;
+
+        if (listaActual == null || listaActual.isEmpty() || indexMateria < 0 || 
+            seleccionarMateriaBoxAltaNotas1.getSelectedItem().equals("No hay materias") ||
+            seleccionarMateriaBoxAltaNotas1.getSelectedItem().equals("No hay materias pendientes para este alumno")) {
             mostrarDialogoCentrado(this, "Debe seleccionar una materia válida.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         // Obtener el alumno y la materia seleccionados
         Alumno alumnoSeleccionado = listaAlumnos.get(indexAlumno);
-        Materia materiaSeleccionada = listaMaterias.get(indexMateria);
+        Materia materiaSeleccionada = listaActual.get(indexMateria);
 
         // Verificar si el alumno ya tiene registro de esta materia
         EstadoMateria estadoActual = alumnoSeleccionado.getHistoriaAcademica().buscarMateria(materiaSeleccionada.getCodigoMateria());
@@ -248,6 +296,10 @@ public class PanelAltaNotas extends javax.swing.JPanel {
                     "Carrera Completada", JOptionPane.INFORMATION_MESSAGE);
             }
         }
+        
+        // Recargar las materias después de actualizar el estado
+        cargarMateriasDeCarrera();
+        validarSelecciones();
     }
    
     // Método para mostrar diálogos centrados en la pantalla y ajustados a la izquierda

@@ -3,9 +3,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
 package interfaces.views;
-import java.awt.HeadlessException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JDialog;
+import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import logica.*;
 /**
@@ -135,27 +135,86 @@ private Gestion gestion;
         );
     }// </editor-fold>//GEN-END:initComponents
     private void cargarDatos() {
-        // Cargar materias - mostrando tanto código como nombre
-        DefaultComboBoxModel<String> modelMaterias = new DefaultComboBoxModel<>();
-
-        System.out.println("Cargando lista de materias en el ComboBox:");
-        for (Materia materia : gestion.getMateria()) {
-            String infoMateria = materia.getCodigoMateria() + " - " + materia.getNombreMateria();
-            modelMaterias.addElement(infoMateria);
-            System.out.println("- Añadida materia: '" + infoMateria + "'");
-        }
-        seleccionarMateriaBoxInscripcionMateria.setModel(modelMaterias);
-
-        // Cargar alumnos
+        /// Cargar alumnos
         DefaultComboBoxModel<String> modelAlumnos = new DefaultComboBoxModel<>();
         for (Alumno alumno : gestion.getListaDeAlumnos()) {
             modelAlumnos.addElement(alumno.getLegajo() + " - " + alumno.getNombre() + " " + alumno.getApellido());
         }
         seleccionarAlumnoBoxInscripcionMateria.setModel(modelAlumnos);
+        
+        // Inicialmente, no cargamos materias hasta que se seleccione un alumno
+        seleccionarMateriaBoxInscripcionMateria.setModel(new DefaultComboBoxModel<>(new String[]{"Seleccione un alumno primero"}));
     }
-
+    private void actualizarMateriasDisponibles(Alumno alumno) {
+        DefaultComboBoxModel<String> modelMaterias = new DefaultComboBoxModel<>();
+        
+        if (alumno == null || alumno.getPropuesta() == null || alumno.getPropuesta().isEmpty()) {
+            modelMaterias.addElement("El alumno no está inscrito en ninguna carrera");
+            seleccionarMateriaBoxInscripcionMateria.setModel(modelMaterias);
+            return;
+        }
+        
+        // Buscar la carrera del alumno
+        for (Carrera carrera : gestion.getListaDeCarreras()) {
+            if (carrera.getNombreCarrera().equals(alumno.getPropuesta())) {
+                // Obtener materias del plan de estudio
+                ArrayList<Materia> materiasCarrera = carrera.getPlanDeEstudio().getListaDeMaterias();
+                ArrayList<Materia> materiasDisponibles = new ArrayList<>();
+                
+                System.out.println("Filtrando materias disponibles para: " + alumno.getNombre() + " " + alumno.getApellido());
+                
+                // Filtrar solo las materias en las que el alumno puede inscribirse
+                for (Materia materia : materiasCarrera) {
+                    // Verificar si el alumno ya está inscrito en la materia
+                    HistoriaAcademica historia = alumno.getHistoriaAcademica();
+                    EstadoMateria estadoActual = historia.buscarMateria(materia.getCodigoMateria());
+                    
+                    if (estadoActual != EstadoMateria.CURSANDO && estadoActual != EstadoMateria.FINALIZADA && estadoActual != EstadoMateria.PROMOCIONADA) {
+                        // Verificar si cumple con los requisitos para inscribirse
+                        if (carrera.getPlanDeEstudio().puedeInscribirse(alumno, materia)) {
+                            materiasDisponibles.add(materia);
+                            System.out.println("- Materia disponible: " + materia.getCodigoMateria() + " - " + materia.getNombreMateria());
+                        }
+                    }
+                }
+                
+                // Agregar las materias disponibles al modelo
+                if (materiasDisponibles.isEmpty()) {
+                    modelMaterias.addElement("No hay materias disponibles para inscripción");
+                } else {
+                    for (Materia materia : materiasDisponibles) {
+                        String infoMateria = materia.getCodigoMateria() + " - " + materia.getNombreMateria();
+                        modelMaterias.addElement(infoMateria);
+                    }
+                }
+                
+                break;
+            }
+        }
+        
+        seleccionarMateriaBoxInscripcionMateria.setModel(modelMaterias);
+    }
     private void seleccionarAlumnoBoxInscripcionMateriaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_seleccionarAlumnoBoxInscripcionMateriaActionPerformed
-        // TODO add your handling code here:
+        // Obtener el alumno seleccionado y actualizar las materias disponibles
+        String seleccion = (String) seleccionarAlumnoBoxInscripcionMateria.getSelectedItem();
+        if (seleccion != null && !seleccion.isEmpty()) {
+            try {
+                // Extraer el legajo del alumno
+                int legajo = Integer.parseInt(seleccion.split(" - ")[0]);
+                
+                // Buscar el alumno
+                for (Alumno alumno : gestion.getListaDeAlumnos()) {
+                    if (alumno.getLegajo() == legajo) {
+                        // Actualizar materias disponibles para este alumno
+                        actualizarMateriasDisponibles(alumno);
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Error al procesar la selección del alumno: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
     }//GEN-LAST:event_seleccionarAlumnoBoxInscripcionMateriaActionPerformed
 
     private void seleccionarMateriaBoxInscripcionMateriaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_seleccionarMateriaBoxInscripcionMateriaActionPerformed
