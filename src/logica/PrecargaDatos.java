@@ -340,8 +340,8 @@ public static void precargar(Gestion gestion) {
         carlos.agregarMateriaAHistoriaAcademica(gestion.buscarMateria("IF033"), EstadoMateria.PROMOCIONADA); // Ingeniería de Software II
         carlos.agregarMateriaAHistoriaAcademica(gestion.buscarMateria("IF038"), EstadoMateria.FINALIZADA); // Introducción a la Concurrencia
         carlos.agregarMateriaAHistoriaAcademica(gestion.buscarMateria("IF037"), EstadoMateria.FINALIZADA); // Sistemas Operativos
-        carlos.agregarMateriaAHistoriaAcademica(gestion.buscarMateria("IF000"), EstadoMateria.PROMOCIONADA); // Seminario de Aspectos Legales
-
+        carlos.agregarMateriaAHistoriaAcademica(gestion.buscarMateria("IF000"), EstadoMateria.REGULARIZADA); // Seminario de Aspectos Legales
+        carlos.agregarMateriaAHistoriaAcademica(gestion.buscarMateria("IF055"), EstadoMateria.CURSANDO);
         // No agregamos IF055 (Laboratorio de Software) para que sea la única que falta
     }
 

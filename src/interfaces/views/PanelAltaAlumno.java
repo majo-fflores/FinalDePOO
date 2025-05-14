@@ -260,6 +260,16 @@ private Gestion gestion;
                         JOptionPane.ERROR_MESSAGE);
                     return;
                 }
+
+                // Validar que la persona sea mayor de 18 años
+                LocalDate fechaMinima = LocalDate.now().minusYears(18);
+                if (fechaNacimiento.isAfter(fechaMinima)) {
+                    mostrarDialogoCentrado(
+                        "El alumno debe ser mayor de 18 años para registrarse.",
+                        "Error de Validación",
+                        JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
             } catch (DateTimeParseException ex) {
                 mostrarDialogoCentrado(
                     "Por favor ingrese una fecha válida en el formato AAAA-MM-DD.",
